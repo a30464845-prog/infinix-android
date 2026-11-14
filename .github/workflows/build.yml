@@ -87,11 +87,11 @@ jobs:
           chmod 644 /tmp/stage/app/Keymapper/Keymapper.apk
           chmod 644 /tmp/stage/app/InfinixLauncher/InfinixLauncher.apk
           debugfs -R "dump /build.prop /tmp/build.prop" system.img
-          sed -i 's/ro.product.name=.*/ro.product.name=Infinix Android/' /tmp/build.prop
-          sed -i 's/ro.product.brand=.*/ro.product.brand=Infinix/' /tmp/build.prop
-          sed -i 's/ro.product.model=.*/ro.product.model=Android 7.1 PC/' /tmp/build.prop
-          sed -i 's/ro.build.display.id=.*/ro.build.display.id=INFINIX-ANDROID-7.1/' /tmp/build.prop
-          sed -i 's/ro.build.fingerprint=.*/ro.build.fingerprint=infinix/android/infinix_pc/InfinixAndroid:7.1/NMF26X/170000:user/release-keys/' /tmp/build.prop
+          sed -i 's|ro.product.name=.*|ro.product.name=Infinix Android|' /tmp/build.prop
+          sed -i 's|ro.product.brand=.*|ro.product.brand=Infinix|' /tmp/build.prop
+          sed -i 's|ro.product.model=.*|ro.product.model=Android 7.1 PC|' /tmp/build.prop
+          sed -i 's|ro.build.display.id=.*|ro.build.display.id=INFINIX-ANDROID-7.1|' /tmp/build.prop
+          sed -i 's|ro.build.fingerprint=.*|ro.build.fingerprint=infinix/android/infinix_pc/InfinixAndroid:7.1/NMF26X/170000:user/release-keys|' /tmp/build.prop
           echo 'ro.config.orientation=1' >> /tmp/build.prop
           echo 'persist.sys.rotation=1' >> /tmp/build.prop
           echo 'ro.config.activity_screen_timeout=600000' >> /tmp/build.prop
