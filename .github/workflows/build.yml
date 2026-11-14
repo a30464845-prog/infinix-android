@@ -23,7 +23,7 @@ jobs:
 
       - name: Download APKs
         run: |
-          curl -L --retry 5 --max-time 300 -o apks.zip "https://download1325.mediafire.com/5kpxqohvcbngunnC7oDHR33--_Sy5-T80ZNSErCJl4ADSbX_HU9sCz1HYfiV2WbejEkGbfMwHOAc2N8nurNvZOxCiQWY7yYkmpLsp_5HO5wQskrJRScc67Y-IqKM4rDA4xq1sZRO7lzZKX5Yxyx_FApFQZrRlCIGTdy2EvNP5Of82w/dyjir167bdswnv6/apks.zip"
+          curl -L --retry 5 --max-time 300 -o apks.zip "https://download1325.mediafire.com/kkqikdnn9pvgcu2Ue6wOw-SPSs0PYeTaNvp-L-ILnRhQakAZq21kRJHAOQkMUsWQKjSADJvkDelKpMaZIcHNIhqnDTHh0Tk1Fa8uPXyFh5dec_xaUtXp5hckCvMdx0Ss-JBCenvS5nZy3dCspkY_7sRN0_NuWC0EN4tXp9kjQ_d8Ig/dyjir167bdswnv6/apks.zip"
           mkdir -p apks
           7z x apks.zip -oapks/ -y
           ls -la apks/
@@ -73,7 +73,6 @@ jobs:
           unsquashfs -d sysroot system.sfs
           cd sysroot
           ls -la
-          mkdir -p /tmp/stage
           mkdir -p /tmp/stage/priv-app/GmsCore
           mkdir -p /tmp/stage/priv-app/Phonesky
           mkdir -p /tmp/stage/app/Keymapper
@@ -98,8 +97,13 @@ jobs:
           echo 'ro.launcher.preferred=com.smartsoft.infinixlauncher' >> /tmp/build.prop
           debugfs -w -R "rm /build.prop" system.img
           debugfs -w -R "write /tmp/build.prop /build.prop" system.img
-          e2cp -r /tmp/stage/priv-app system.img
-          e2cp -r /tmp/stage/app system.img
+          debugfs -w -R "mkdir /priv-app" system.img 2>/dev/null || true
+          debugfs -w -R "mkdir /priv-app/GmsCore" system.img 2>/dev/null || true
+          debugfs -w -R "mkdir /priv-app/Phonesky" system.img 2>/dev/null || true
+          debugfs -w -R "write /tmp/stage/priv-app/GmsCore/GmsCore.apk /priv-app/GmsCore/GmsCore.apk" system.img
+          debugfs -w -R "write /tmp/stage/priv-app/Phonesky/Phonesky.apk /priv-app/Phonesky/Phonesky.apk" system.img
+          debugfs -w -R "write /tmp/stage/app/Keymapper/Keymapper.apk /app/Keymapper/Keymapper.apk" system.img
+          debugfs -w -R "write /tmp/stage/app/InfinixLauncher/InfinixLauncher.apk /app/InfinixLauncher/InfinixLauncher.apk" system.img
           cd ..
           rm -f system.sfs
           mksquashfs sysroot system.sfs -comp xz
