@@ -17,7 +17,7 @@ jobs:
 
       - name: Download ISO
         run: |
-          curl -L --retry 10 --retry-delay 30 --max-time 600 -o android-x86.iso "https://download1980.mediafire.com/byt9g4rfw4igs-1WQQtnKLq_nfqj_3XrZkM9owRebdYkkWn_4JtJChZ5neCcXdkONYCD6j6gs7M6gjn8tl9CAbOYMSgwOS2MkIYP1AvL0SJEphlO2UuO9zJgl9S_oXIQamhajiKJ0-uu4slRehysJzspt8Xc0Tm1AlJ3_FPoDe3a7g/g4j56r1ox5wzwd2/android-x86-7.1-r5-k419.iso"
+          curl -L --retry 10 --retry-delay 30 --max-time 600 -o android-x86.iso "https://download1980.mediafire.com/7kero7ejhuygg4dCYIwqkdiaHLEblhEDW5FrGM78oZPqH9SlYuFAfiIMA0lCBoW_GbwEyMpxzH8SEWk4RIpvwnmTwpteatAhT4CU1rGeVYz85Seu8qs2TCjxZunlQzOUW71Bh6YVVjWWfggIO3la5z9SdvCp3J-CDpUGeWRZPSmedw/g4j56r1ox5wzwd2/android-x86-7.1-r5-k419.iso"
           ls -la android-x86.iso
           file android-x86.iso
 
