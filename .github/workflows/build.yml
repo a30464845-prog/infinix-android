@@ -1,0 +1,78 @@
+name: Build Infinix Android 7.1
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo apt update
+          sudo apt install -y p7zip-full squashfs-tools xorriso
+
+      - name: Download Android-x86 7.1
+        run: |
+          curl -L --retry 10 --retry-delay 30 --max-time 600 -o android-x86.iso https://android-x86.org/releases/7.1-r3/isos/android-x86_32-7.1-r3.iso
+          ls -la android-x86.iso
+
+      - name: Extract ISO
+        run: |
+          mkdir -p extracted
+          7z x android-x86.iso -oextracted/ -y
+
+      - name: Fix ACPI + Logo + Landscape
+        run: |
+          cd extracted
+          sed -i "s/quiet/quiet acpi_osi=! acpi_osi='Windows 2012' acpi_sleep=s3_bios,s3_mode i915.modeset=1 i915.enable_fbc=0 i915.enable_psr=0 intel_idle.max_cstate=1 video=1024x768/g" isolinux/isolinux.cfg
+          sed -i 's/MENU TITLE.*/MENU TITLE Infinix Android 7.1 - Made by ABDUL REHMAN FAROOQI/g' isolinux/isolinux.cfg
+          cp ../infinix-logo.bmp isolinux/boot.splash
+
+      - name: Modify system
+        run: |
+          cd extracted
+          unsquashfs -d sysroot system.sfs
+          cd sysroot
+          rm -rf system/app/*
+          rm -rf system/priv-app/*
+          mkdir -p system/priv-app/GmsCore
+          mkdir -p system/priv-app/Phonesky
+          mkdir -p system/app/Keymapper
+          mkdir -p system/app/InfinixLauncher
+          cp ../apks/gms.apk system/priv-app/GmsCore/GmsCore.apk
+          cp ../apks/playstore.apk system/priv-app/Phonesky/Phonesky.apk
+          cp ../apks/keymapper.apk system/app/Keymapper/Keymapper.apk
+          cp ../apks/infinixlauncher.apk system/app/InfinixLauncher/InfinixLauncher.apk
+          chmod 644 system/priv-app/GmsCore/GmsCore.apk
+          chmod 644 system/priv-app/Phonesky/Phonesky.apk
+          chmod 644 system/app/Keymapper/Keymapper.apk
+          chmod 644 system/app/InfinixLauncher/InfinixLauncher.apk
+          sed -i 's/ro.product.name=.*/ro.product.name=Infinix Android/' system/build.prop
+          sed -i 's/ro.product.brand=.*/ro.product.brand=Infinix/' system/build.prop
+          sed -i 's/ro.product.model=.*/ro.product.model=Android 7.1 PC/' system/build.prop
+          sed -i 's/ro.build.display.id=.*/ro.build.display.id=INFINIX-ANDROID-7.1/' system/build.prop
+          sed -i 's/ro.build.fingerprint=.*/ro.build.fingerprint=infinix/android/infinix_pc/InfinixAndroid:7.1/NMF26X/170000:user/release-keys/' system/build.prop
+          echo 'ro.config.orientation=1' >> system/build.prop
+          echo 'persist.sys.rotation=1' >> system/build.prop
+          echo 'ro.config.activity_screen_timeout=600000' >> system/build.prop
+          echo 'ro.launcher.preferred=com.smartsoft.infinixlauncher' >> system/build.prop
+          cd ..
+          rm -f system.sfs
+          mksquashfs sysroot system.sfs -comp xz
+          rm -rf sysroot
+
+      - name: Rebuild ISO
+        run: |
+          cd extracted
+          xorriso -as mkisofs -o ../Infinix-Android-7.1.iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -R -J -V "INFINIX ANDROID" .
+          ls -la ../Infinix-Android-7.1.iso
+
+      - name: Upload ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: infinix-android-7.1
+          path: Infinix-Android-7.1.iso   
