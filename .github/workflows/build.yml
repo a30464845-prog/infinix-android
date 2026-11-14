@@ -15,9 +15,9 @@ jobs:
           sudo apt update
           sudo apt install -y p7zip-full squashfs-tools xorriso
 
-            - name: Download Android-x86 7.1
+      - name: Download ISO
         run: |
-          curl -L --retry 10 --retry-delay 30 --max-time 600 -o android-x86.iso "https://downloads.sourceforge.net/project/android-x86/7.1-r3/android-x86_32-7.1-r3.iso"
+          curl -L --retry 10 --retry-delay 30 --max-time 600 -o android-x86.iso "https://www.mediafire.com/file/g4j56r1ox5wzwd2/android-x86-7.1-r5-k419.iso/file"
           ls -la android-x86.iso
           file android-x86.iso
 
@@ -25,7 +25,6 @@ jobs:
         run: |
           mkdir -p extracted
           7z x android-x86.iso -oextracted/ -y
-          ls -la extracted/
 
       - name: Fix ACPI + Logo + Landscape
         run: |
