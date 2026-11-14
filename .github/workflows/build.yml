@@ -71,41 +71,48 @@ jobs:
           sed -i 's/MENU TITLE.*/MENU TITLE Infinix Android 7.1 - Made by ABDUL REHMAN FAROOQI/g' isolinux/isolinux.cfg
           cp ../infinix-logo.bmp isolinux/boot.splash
 
-      - name: Modify system
+            - name: Modify system
         run: |
+          sudo apt-get install -y e2fsprogs
           cd extracted
           unsquashfs -d sysroot system.sfs
           cd sysroot
           echo "=== sysroot contents ==="
           ls -la
-          rm -rf app/*
-          rm -rf priv-app/*
-          mkdir -p priv-app/GmsCore
-          mkdir -p priv-app/Phonesky
-          mkdir -p app/Keymapper
-          mkdir -p app/InfinixLauncher
-          cp ../../apks/gms.apk priv-app/GmsCore/GmsCore.apk
-          cp ../../apks/playstore.apk priv-app/Phonesky/Phonesky.apk
-          cp ../../apks/keymapper.apk app/Keymapper/Keymapper.apk
-          cp ../../apks/infinixlauncher.apk app/InfinixLauncher/InfinixLauncher.apk
-          chmod 644 priv-app/GmsCore/GmsCore.apk
-          chmod 644 priv-app/Phonesky/Phonesky.apk
-          chmod 644 app/Keymapper/Keymapper.apk
-          chmod 644 app/InfinixLauncher/InfinixLauncher.apk
-          sed -i 's/ro.product.name=.*/ro.product.name=Infinix Android/' build.prop
-          sed -i 's/ro.product.brand=.*/ro.product.brand=Infinix/' build.prop
-          sed -i 's/ro.product.model=.*/ro.product.model=Android 7.1 PC/' build.prop
-          sed -i 's/ro.build.display.id=.*/ro.build.display.id=INFINIX-ANDROID-7.1/' build.prop
-          sed -i 's/ro.build.fingerprint=.*/ro.build.fingerprint=infinix/android/infinix_pc/InfinixAndroid:7.1/NMF26X/170000:user/release-keys/' build.prop
-          echo 'ro.config.orientation=1' >> build.prop
-          echo 'persist.sys.rotation=1' >> build.prop
-          echo 'ro.config.activity_screen_timeout=600000' >> build.prop
-          echo 'ro.launcher.preferred=com.smartsoft.infinixlauncher' >> build.prop
+          sudo losetup -f system.img
+          LOOP=$(losetup -j system.img | awk '{print "/dev/"$1}')
+          sudo mount "$LOOP" /mnt
+          echo "=== system.img mounted ==="
+          ls /mnt/
+          rm -rf /mnt/app/*
+          rm -rf /mnt/priv-app/*
+          mkdir -p /mnt/priv-app/GmsCore
+          mkdir -p /mnt/priv-app/Phonesky
+          mkdir -p /mnt/app/Keymapper
+          mkdir -p /mnt/app/InfinixLauncher
+          cp ../../apks/gms.apk /mnt/priv-app/GmsCore/GmsCore.apk
+          cp ../../apks/playstore.apk /mnt/priv-app/Phonesky/Phonesky.apk
+          cp ../../apks/keymapper.apk /mnt/app/Keymapper/Keymapper.apk
+          cp ../../apks/infinixlauncher.apk /mnt/app/InfinixLauncher/InfinixLauncher.apk
+          chmod 644 /mnt/priv-app/GmsCore/GmsCore.apk
+          chmod 644 /mnt/priv-app/Phonesky/Phonesky.apk
+          chmod 644 /mnt/app/Keymapper/Keymapper.apk
+          chmod 644 /mnt/app/InfinixLauncher/InfinixLauncher.apk
+          sed -i 's/ro.product.name=.*/ro.product.name=Infinix Android/' /mnt/build.prop
+          sed -i 's/ro.product.brand=.*/ro.product.brand=Infinix/' /mnt/build.prop
+          sed -i 's/ro.product.model=.*/ro.product.model=Android 7.1 PC/' /mnt/build.prop
+          sed -i 's/ro.build.display.id=.*/ro.build.display.id=INFINIX-ANDROID-7.1/' /mnt/build.prop
+          sed -i 's/ro.build.fingerprint=.*/ro.build.fingerprint=infinix/android/infinix_pc/InfinixAndroid:7.1/NMF26X/170000:user/release-keys/' /mnt/build.prop
+          echo 'ro.config.orientation=1' >> /mnt/build.prop
+          echo 'persist.sys.rotation=1' >> /mnt/build.prop
+          echo 'ro.config.activity_screen_timeout=600000' >> /mnt/build.prop
+          echo 'ro.launcher.preferred=com.smartsoft.infinixlauncher' >> /mnt/build.prop
+          sudo umount /mnt
+          sudo losetup -d "$LOOP"
           cd ..
           rm -f system.sfs
           mksquashfs sysroot system.sfs -comp xz
           rm -rf sysroot
-
       - name: Rebuild ISO
         run: |
           cd extracted
