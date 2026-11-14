@@ -23,7 +23,7 @@ jobs:
 
       - name: Download APKs
         run: |
-          curl -L --retry 5 --max-time 300 -o apks.zip "https://download1325.mediafire.com/5kib9hb42gtgxRnVBda6VbwdtSjKL2ES75Vm3D5RoUsHo1gpkAWngbkteayN_qLOGll3A4EplbvYII6svAZkjV8bQLssZnepQnEx2Us6MlAEs06ft0ASEDdT33V_v5TZ34JqjLdiZM1GHXm7fQUs-ZsOo5LSZPmIezDoYDJCLs3Vyw/dyjir167bdswnv6/apks.zip"
+          curl -L --retry 5 --max-time 300 -o apks.zip "https://download1325.mediafire.com/ttdx35fnigygNZEyp7Nn4jfYL4lNXIA4GJ87E0mpqyl_OODmZ_Nq9a1sq-jPsXZJs8_nkBXN2fDPSv_Lf7_s8HVUQfpWH1lu29Kr3YHsCoNB677KFt0WkK4xJJCtchUSZglA87qPV4-phT9hOg0kJ8b-1tHPqZmNtNxqovNmJBnyxQ/dyjir167bdswnv6/apks.zip"
           mkdir -p apks
           7z x apks.zip -oapks/ -y
           echo "=== Files in apks/ ==="
