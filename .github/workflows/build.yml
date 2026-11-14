@@ -13,27 +13,25 @@ jobs:
       - name: Install tools
         run: |
           sudo apt update
-          sudo apt install -y p7zip-full squashfs-tools xorriso
+          sudo apt install -y p7zip-full squashfs-tools xorriso e2fsprogs
 
       - name: Download ISO
         run: |
-          curl -L --retry 10 --retry-delay 30 --max-time 600 -o android-x86.iso "https://download1980.mediafire.com/7kero7ejhuygg4dCYIwqkdiaHLEblhEDW5FrGM78oZPqH9SlYuFAfiIMA0lCBoW_GbwEyMpxzH8SEWk4RIpvwnmTwpteatAhT4CU1rGeVYz85Seu8qs2TCjxZunlQzOUW71Bh6YVVjWWfggIO3la5z9SdvCp3J-CDpUGeWRZPSmedw/g4j56r1ox5wzwd2/android-x86-7.1-r5-k419.iso"
+          curl -L --retry 10 --retry-delay 30 --max-time 600 -o android-x86.iso "https://github.com/a30464845-prog/infinix-android/releases/download/v1/android-x86-7.1-r5-k419.iso"
           ls -la android-x86.iso
           file android-x86.iso
 
       - name: Download APKs
         run: |
-          curl -L --retry 5 --max-time 300 -o apks.zip "https://download1325.mediafire.com/ttdx35fnigygNZEyp7Nn4jfYL4lNXIA4GJ87E0mpqyl_OODmZ_Nq9a1sq-jPsXZJs8_nkBXN2fDPSv_Lf7_s8HVUQfpWH1lu29Kr3YHsCoNB677KFt0WkK4xJJCtchUSZglA87qPV4-phT9hOg0kJ8b-1tHPqZmNtNxqovNmJBnyxQ/dyjir167bdswnv6/apks.zip"
+          curl -L --retry 5 --max-time 300 -o apks.zip "https://download1325.mediafire.com/5kib9hb42gtgxRnVBda6VbwdtSjKL2ES75Vm3D5RoUsHo1gpkAWngbkteayN_qLOGll3A4EplbvYII6svAZkjV8bQLssZnepQnEx2Us6MlAEs06ft0ASEDdT33V_v5TZ34JqjLdiZM1GHXm7fQUs-ZsOo5LSZPmIezDoYDJCLs3Vyw/dyjir167bdswnv6/apks.zip"
           mkdir -p apks
           7z x apks.zip -oapks/ -y
-          echo "=== Files in apks/ ==="
           ls -la apks/
           cd apks
           for f in *.apk *.xapk *.apkm; do
             [ -f "$f" ] || continue
             case "$f" in
               *xapk*|*apkm*)
-                echo "Extracting base APK from $f..."
                 mkdir -p tmpx
                 7z x "$f" -otmpx -y
                 BASE=$(find tmpx -name "*.apk" ! -name "*split*" | head -1)
@@ -52,10 +50,8 @@ jobs:
             esac
           done
           if [ -f extracted_base.apk ]; then
-            echo "Using extracted base APK for launcher"
             mv extracted_base.apk infinixlauncher.apk
           fi
-          echo "=== Final APKs ==="
           ls -la *.apk
           cd ..
 
@@ -71,48 +67,44 @@ jobs:
           sed -i 's/MENU TITLE.*/MENU TITLE Infinix Android 7.1 - Made by ABDUL REHMAN FAROOQI/g' isolinux/isolinux.cfg
           cp ../infinix-logo.bmp isolinux/boot.splash
 
-            - name: Modify system
+      - name: Modify system
         run: |
-          sudo apt-get install -y e2fsprogs
           cd extracted
           unsquashfs -d sysroot system.sfs
           cd sysroot
-          echo "=== sysroot contents ==="
           ls -la
-          sudo losetup -f system.img
-          LOOP=$(losetup -j system.img | awk '{print "/dev/"$1}')
-          sudo mount "$LOOP" /mnt
-          echo "=== system.img mounted ==="
-          ls /mnt/
-          rm -rf /mnt/app/*
-          rm -rf /mnt/priv-app/*
-          mkdir -p /mnt/priv-app/GmsCore
-          mkdir -p /mnt/priv-app/Phonesky
-          mkdir -p /mnt/app/Keymapper
-          mkdir -p /mnt/app/InfinixLauncher
-          cp ../../apks/gms.apk /mnt/priv-app/GmsCore/GmsCore.apk
-          cp ../../apks/playstore.apk /mnt/priv-app/Phonesky/Phonesky.apk
-          cp ../../apks/keymapper.apk /mnt/app/Keymapper/Keymapper.apk
-          cp ../../apks/infinixlauncher.apk /mnt/app/InfinixLauncher/InfinixLauncher.apk
-          chmod 644 /mnt/priv-app/GmsCore/GmsCore.apk
-          chmod 644 /mnt/priv-app/Phonesky/Phonesky.apk
-          chmod 644 /mnt/app/Keymapper/Keymapper.apk
-          chmod 644 /mnt/app/InfinixLauncher/InfinixLauncher.apk
-          sed -i 's/ro.product.name=.*/ro.product.name=Infinix Android/' /mnt/build.prop
-          sed -i 's/ro.product.brand=.*/ro.product.brand=Infinix/' /mnt/build.prop
-          sed -i 's/ro.product.model=.*/ro.product.model=Android 7.1 PC/' /mnt/build.prop
-          sed -i 's/ro.build.display.id=.*/ro.build.display.id=INFINIX-ANDROID-7.1/' /mnt/build.prop
-          sed -i 's/ro.build.fingerprint=.*/ro.build.fingerprint=infinix/android/infinix_pc/InfinixAndroid:7.1/NMF26X/170000:user/release-keys/' /mnt/build.prop
-          echo 'ro.config.orientation=1' >> /mnt/build.prop
-          echo 'persist.sys.rotation=1' >> /mnt/build.prop
-          echo 'ro.config.activity_screen_timeout=600000' >> /mnt/build.prop
-          echo 'ro.launcher.preferred=com.smartsoft.infinixlauncher' >> /mnt/build.prop
-          sudo umount /mnt
-          sudo losetup -d "$LOOP"
+          mkdir -p /tmp/stage
+          mkdir -p /tmp/stage/priv-app/GmsCore
+          mkdir -p /tmp/stage/priv-app/Phonesky
+          mkdir -p /tmp/stage/app/Keymapper
+          mkdir -p /tmp/stage/app/InfinixLauncher
+          cp ../../apks/gms.apk /tmp/stage/priv-app/GmsCore/GmsCore.apk
+          cp ../../apks/playstore.apk /tmp/stage/priv-app/Phonesky/Phonesky.apk
+          cp ../../apks/keymapper.apk /tmp/stage/app/Keymapper/Keymapper.apk
+          cp ../../apks/infinixlauncher.apk /tmp/stage/app/InfinixLauncher/InfinixLauncher.apk
+          chmod 644 /tmp/stage/priv-app/GmsCore/GmsCore.apk
+          chmod 644 /tmp/stage/priv-app/Phonesky/Phonesky.apk
+          chmod 644 /tmp/stage/app/Keymapper/Keymapper.apk
+          chmod 644 /tmp/stage/app/InfinixLauncher/InfinixLauncher.apk
+          debugfs -R "rdump /build.prop /tmp/build.prop" system.img
+          sed -i 's/ro.product.name=.*/ro.product.name=Infinix Android/' /tmp/build.prop
+          sed -i 's/ro.product.brand=.*/ro.product.brand=Infinix/' /tmp/build.prop
+          sed -i 's/ro.product.model=.*/ro.product.model=Android 7.1 PC/' /tmp/build.prop
+          sed -i 's/ro.build.display.id=.*/ro.build.display.id=INFINIX-ANDROID-7.1/' /tmp/build.prop
+          sed -i 's/ro.build.fingerprint=.*/ro.build.fingerprint=infinix/android/infinix_pc/InfinixAndroid:7.1/NMF26X/170000:user/release-keys/' /tmp/build.prop
+          echo 'ro.config.orientation=1' >> /tmp/build.prop
+          echo 'persist.sys.rotation=1' >> /tmp/build.prop
+          echo 'ro.config.activity_screen_timeout=600000' >> /tmp/build.prop
+          echo 'ro.launcher.preferred=com.smartsoft.infinixlauncher' >> /tmp/build.prop
+          debugfs -w -R "rm /build.prop" system.img
+          debugfs -w -R "write /tmp/build.prop /build.prop" system.img
+          e2cp -r /tmp/stage/priv-app system.img
+          e2cp -r /tmp/stage/app system.img
           cd ..
           rm -f system.sfs
           mksquashfs sysroot system.sfs -comp xz
           rm -rf sysroot
+
       - name: Rebuild ISO
         run: |
           cd extracted
