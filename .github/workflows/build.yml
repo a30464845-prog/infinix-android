@@ -26,7 +26,38 @@ jobs:
           curl -L --retry 5 --max-time 300 -o apks.zip "https://download1325.mediafire.com/5kib9hb42gtgxRnVBda6VbwdtSjKL2ES75Vm3D5RoUsHo1gpkAWngbkteayN_qLOGll3A4EplbvYII6svAZkjV8bQLssZnepQnEx2Us6MlAEs06ft0ASEDdT33V_v5TZ34JqjLdiZM1GHXm7fQUs-ZsOo5LSZPmIezDoYDJCLs3Vyw/dyjir167bdswnv6/apks.zip"
           mkdir -p apks
           7z x apks.zip -oapks/ -y
+          echo "=== Files in apks/ ==="
           ls -la apks/
+          cd apks
+          for f in *.apk *.xapk *.apkm; do
+            [ -f "$f" ] || continue
+            case "$f" in
+              *xapk*|*apkm*)
+                echo "Extracting base APK from $f..."
+                mkdir -p tmpx
+                7z x "$f" -otmpx -y
+                BASE=$(find tmpx -name "*.apk" ! -name "*split*" | head -1)
+                if [ -n "$BASE" ]; then cp "$BASE" extracted_base.apk; fi
+                rm -rf tmpx
+                ;;
+            esac
+          done
+          for f in *.apk *.xapk *.apkm; do
+            [ -f "$f" ] || continue
+            case "$f" in
+              *vending*|*playstore*|*play.store*|*Phonesky*) mv "$f" playstore.apk ;;
+              *Play_Dienste*|*play.services*|*gms*|*GmsCore*) mv "$f" gms.apk ;;
+              *keymapper*|*key.mapper*) mv "$f" keymapper.apk ;;
+              *Infinix*|*infinix*|*launcher*) mv "$f" infinixlauncher.apk ;;
+            esac
+          done
+          if [ -f extracted_base.apk ]; then
+            echo "Using extracted base APK for launcher"
+            mv extracted_base.apk infinixlauncher.apk
+          fi
+          echo "=== Final APKs ==="
+          ls -la *.apk
+          cd ..
 
       - name: Extract ISO
         run: |
