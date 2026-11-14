@@ -15,10 +15,16 @@ jobs:
           sudo apt update
           sudo apt install -y p7zip-full squashfs-tools xorriso
 
-      - name: Download Android-x86 7.1
+            - name: Download Android-x86 7.1
         run: |
-          curl -L --retry 10 --retry-delay 30 --max-time 600 -o android-x86.iso https://android-x86.org/releases/7.1-r3/isos/android-x86_32-7.1-r3.iso
+          curl -L --retry 10 --retry-delay 30 --max-time 600 -o android-x86.iso "https://sourceforge.net/projects/android-x86/files/7.1-r3/android-x86_32-7.1-r3.iso/download"
           ls -la android-x86.iso
+          if [ $(stat -c%s android-x86.iso) -lt 100000000 ]; then
+            echo "ERROR: File too small, trying alternate URL"
+            curl -L --retry 5 --max-time 600 -o android-x86.iso "https://android-x86.org/releases/7.1-r3/isos/android-x86_32-7.1-r3.iso"
+          fi
+          ls -la android-x86.iso
+          file android-x86.iso
 
       - name: Extract ISO
         run: |
