@@ -51,10 +51,10 @@ jobs:
           mkdir -p system/priv-app/Phonesky
           mkdir -p system/app/Keymapper
           mkdir -p system/app/InfinixLauncher
-          cp ../apks/gms.apk system/priv-app/GmsCore/GmsCore.apk
-          cp ../apks/playstore.apk system/priv-app/Phonesky/Phonesky.apk
-          cp ../apks/keymapper.apk system/app/Keymapper/Keymapper.apk
-          cp ../apks/infinixlauncher.apk system/app/InfinixLauncher/InfinixLauncher.apk
+          cp ../../apks/gms.apk system/priv-app/GmsCore/GmsCore.apk
+          cp ../../apks/playstore.apk system/priv-app/Phonesky/Phonesky.apk
+          cp ../../apks/keymapper.apk system/app/Keymapper/Keymapper.apk
+          cp ../../apks/infinixlauncher.apk system/app/InfinixLauncher/InfinixLauncher.apk
           chmod 644 system/priv-app/GmsCore/GmsCore.apk
           chmod 644 system/priv-app/Phonesky/Phonesky.apk
           chmod 644 system/app/Keymapper/Keymapper.apk
